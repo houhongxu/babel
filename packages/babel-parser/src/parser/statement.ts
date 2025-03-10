@@ -191,14 +191,19 @@ export default abstract class StatementParser extends ExpressionParser {
   // `program` argument.  If present, the statements will be appended
   // to its body instead of creating a new node.
 
+  //// 解析最外层
   parseTopLevel(
     this: Parser,
     file: Undone<N.File>,
     program: Undone<N.Program>,
   ): N.File {
+    //// 解析program对象到结果中
     file.program = this.parseProgram(program);
+
+    //// 解析注释对象到结果中
     file.comments = this.comments;
 
+    //// 添加tokens数组到结果中
     if (this.options.tokens) {
       file.tokens = babel7CompatTokens(this.tokens, this.input);
     }
@@ -206,6 +211,7 @@ export default abstract class StatementParser extends ExpressionParser {
     return this.finishNode(file, "File");
   }
 
+  //// 解析program ast 对象
   parseProgram(
     this: Parser,
     program: Undone<N.Program>,
@@ -213,8 +219,12 @@ export default abstract class StatementParser extends ExpressionParser {
     sourceType: SourceType = this.options.sourceType,
   ): N.Program {
     program.sourceType = sourceType;
+
     program.interpreter = this.parseInterpreterDirective();
+
+    //// 解析body对象
     this.parseBlockBody(program, true, true, end);
+
     if (this.inModule) {
       if (
         !this.options.allowUndeclaredExports &&
@@ -358,6 +368,7 @@ export default abstract class StatementParser extends ExpressionParser {
     return false;
   }
 
+  //// 顶层解析函数
   // https://tc39.es/ecma262/#prod-ModuleItem
   parseModuleItem(this: Parser) {
     return this.parseStatementLike(
@@ -370,6 +381,7 @@ export default abstract class StatementParser extends ExpressionParser {
     );
   }
 
+  //// 代码块内解析函数
   // https://tc39.es/ecma262/#prod-StatementListItem
   parseStatementListItem(this: Parser) {
     return this.parseStatementLike(
@@ -406,6 +418,7 @@ export default abstract class StatementParser extends ExpressionParser {
     return this.parseStatementLike(ParseStatementFlag.StatementOnly);
   }
 
+  //// 代码块内解析函数
   // ImportDeclaration and ExportDeclaration are also handled here so we can throw recoverable errors
   // when they are not at the top level
   parseStatementLike(
@@ -423,14 +436,18 @@ export default abstract class StatementParser extends ExpressionParser {
     if (this.match(tt.at)) {
       decorators = this.parseDecorators(true);
     }
+
+    //// 返回解析的ast
     return this.parseStatementContent(flags, decorators);
   }
 
+  //// 根据token解析ast
   parseStatementContent(
     this: Parser,
     flags: ParseStatementFlag,
     decorators?: N.Decorator[] | null,
   ): N.Statement {
+    //// type就是token里的type
     const startType = this.state.type;
     const node = this.startNode();
     const allowDeclaration = !!(flags & ParseStatementFlag.AllowDeclaration);
@@ -443,6 +460,7 @@ export default abstract class StatementParser extends ExpressionParser {
     // start with. Many are trivial to parse, some require a bit of
     // complexity.
 
+    //// 通过switch token的type来生成ast
     switch (startType) {
       case tt._break:
         return this.parseBreakContinueStatement(node, /* isBreak */ true);
@@ -1355,6 +1373,7 @@ export default abstract class StatementParser extends ExpressionParser {
     );
   }
 
+  //// 解析body对象
   parseBlockBody(
     this: Parser,
     node: Undone<N.BlockStatementLike>,
@@ -1363,9 +1382,13 @@ export default abstract class StatementParser extends ExpressionParser {
     end: TokenType,
     afterBlockParse?: (hasStrictModeDirective: boolean) => void,
   ): void {
+    //// body 数组，每部分代码都是其中的item
     const body: N.BlockStatementLike["body"] = (node.body = []);
+
     const directives: N.BlockStatementLike["directives"] = (node.directives =
       []);
+
+    //// 解析代码为ast并压入body数组
     this.parseBlockOrModuleBlockBody(
       body,
       allowDirectives ? directives : undefined,
@@ -1375,6 +1398,7 @@ export default abstract class StatementParser extends ExpressionParser {
     );
   }
 
+  //// 解析代码为ast并压入body数组
   // Undefined directives means that directives are not allowed.
   // https://tc39.es/ecma262/#prod-Block
   // https://tc39.es/ecma262/#prod-ModuleBody
@@ -1390,7 +1414,9 @@ export default abstract class StatementParser extends ExpressionParser {
     let hasStrictModeDirective = false;
     let parsedNonDirective = false;
 
+    //// 循环解析每一部分代码
     while (!this.match(end)) {
+      //// 根据是否在顶层区分解析函数
       const stmt = topLevel
         ? this.parseModuleItem()
         : this.parseStatementListItem();
@@ -1414,6 +1440,8 @@ export default abstract class StatementParser extends ExpressionParser {
         // clear strict errors since the strict mode will not change within the block
         this.state.strictErrors.clear();
       }
+
+      //// 将解析的ast push到body数组
       body.push(stmt);
     }
 

@@ -54,6 +54,7 @@ export type {
   ConfigItem,
 } from "./config/index.ts";
 
+//// transform从对应文件导出
 export {
   transform,
   transformSync,

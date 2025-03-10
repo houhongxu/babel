@@ -237,6 +237,7 @@ if (!process.env.BABEL_8_BREAKING && !USE_ESM) {
   };
 }
 
+//// 包导出的generate函数
 /**
  * Turns an AST into code, maintaining sourcemaps, user preferences, and valid output.
  * @param ast - the abstract syntax tree from which to generate output code.
@@ -249,10 +250,15 @@ export default function generate(
   opts: GeneratorOptions = {},
   code?: string | { [filename: string]: string },
 ): GeneratorResult {
+  //// 格式化options
   const format = normalizeOptions(code, opts);
+
+  //// 构建sourcemap
   const map = opts.sourceMaps ? new SourceMap(opts, code) : null;
 
+  //// 构建Printer实例
   const printer = new Printer(format, map);
 
+  //// 生成code
   return printer.generate(ast);
 }

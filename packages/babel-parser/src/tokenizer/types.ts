@@ -136,6 +136,7 @@ function createKeywordLike(
 
 export type InternalTokenTypes = typeof tt;
 
+//// token映射
 export const tt = {
   // Punctuation token types.
   bracketL: createToken("[", { beforeExpr, startsExpr }),

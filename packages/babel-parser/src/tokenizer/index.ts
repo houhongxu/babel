@@ -263,13 +263,18 @@ export default abstract class Tokenizer extends CommentsParser {
   // Read a single token, updating the parser object's token-related properties.
   nextToken(): void {
     this.skipSpace();
+
     this.state.start = this.state.pos;
+
     if (!this.isLookahead) this.state.startLoc = this.state.curPosition();
+
+    //// 读取的位置到最后则结束token解析
     if (this.state.pos >= this.length) {
       this.finishToken(tt.eof);
       return;
     }
 
+    //// 从jscode解析token
     this.getTokenFromCode(this.codePointAtPos(this.state.pos));
   }
 
@@ -545,6 +550,7 @@ export default abstract class Tokenizer extends CommentsParser {
     }
   }
 
+  //// 创建dot的token
   readToken_dot(): void {
     const next = this.input.charCodeAt(this.state.pos + 1);
     if (next >= charCodes.digit0 && next <= charCodes.digit9) {
@@ -849,7 +855,9 @@ export default abstract class Tokenizer extends CommentsParser {
     }
   }
 
+  //// jscode->token
   getTokenFromCode(code: number): void {
+    /// 通过switch来根据字符的unicode即charCode来创建token
     switch (code) {
       // The interpretation of a dot depends on whether it is followed
       // by a digit or another two dots.

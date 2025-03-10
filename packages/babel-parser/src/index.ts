@@ -23,6 +23,7 @@ import type { Expression, File } from "./types.ts";
 export type { Expression, File };
 
 export function parse(input: string, options?: Options): File {
+  //// unambiguous情况先不看
   if (options?.sourceType === "unambiguous") {
     options = {
       ...options,
@@ -62,6 +63,7 @@ export function parse(input: string, options?: Options): File {
       throw moduleError;
     }
   } else {
+    //// 通过getParser获取parser实例然后执行parse函数
     return getParser(options, input).parse();
   }
 }
@@ -89,8 +91,12 @@ function generateExportedTokenTypes(
 export const tokTypes = generateExportedTokenTypes(internalTokenTypes);
 
 function getParser(options: Options | undefined | null, input: string): Parser {
+  //// 获取默认的Parser类
   let cls = Parser;
+
   const pluginsMap: PluginsMap = new Map();
+
+  //// 如果有插件，插件处理后获取新的Parser类
   if (options?.plugins) {
     for (const plugin of options.plugins) {
       let name, opts;
@@ -107,6 +113,7 @@ function getParser(options: Options | undefined | null, input: string): Parser {
     cls = getParserClass(pluginsMap);
   }
 
+  //// 返回Parser类实例
   return new cls(options, input, pluginsMap);
 }
 

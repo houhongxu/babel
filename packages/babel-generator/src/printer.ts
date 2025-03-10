@@ -105,6 +105,7 @@ interface PrintListOptions {
   indent?: boolean;
 }
 
+//// Printer实例
 export type PrintJoinOptions = PrintListOptions & PrintSequenceOptions;
 class Printer {
   constructor(format: Format, map: SourceMap) {
@@ -147,10 +148,14 @@ class Printer {
   _endsWithInnerRaw: boolean = false;
   _indentInnerComments: boolean = true;
 
+  //// generate函数生成新code
   generate(ast: t.Node) {
+    //// 逐字打印
     this.print(ast);
+
     this._maybeAddAuxComment();
 
+    //// 返回buffer处理的结果，包括新code
     return this._buf.get();
   }
 
@@ -373,6 +378,7 @@ class Printer {
   }
 
   exactSource(loc: Loc | undefined, cb: () => void) {
+    //// 没有loc不需要处理sourcemap，直接调用printMethod返回
     if (!loc) {
       cb();
       return;
@@ -380,6 +386,7 @@ class Printer {
 
     this._catchUp("start", loc);
 
+    //// 处理sourcemap后调用printMethod返回
     this._buf.exactSource(loc, cb);
   }
 
@@ -621,6 +628,7 @@ class Printer {
     }
   }
 
+  ////  逐字打印新code
   print(
     node: t.Node | null,
     parent?: t.Node,
@@ -634,6 +642,7 @@ class Printer {
 
     this._endsWithInnerRaw = false;
 
+    //// 节点类型
     const nodeType = node.type;
     const format = this.format;
 
@@ -645,6 +654,7 @@ class Printer {
       format.concise = true;
     }
 
+    //// 根据节点类型获取打印方法，在最下方已经挂载过方法，本函数执行时肯定可以访问到
     const printMethod =
       this[
         nodeType as Exclude<
@@ -714,6 +724,7 @@ class Printer {
 
     const loc = nodeType === "Program" || nodeType === "File" ? null : node.loc;
 
+    //// 处理sourcemap
     this.exactSource(
       loc,
       // We must use @ts-ignore because this error appears in VSCode but not
@@ -1243,6 +1254,7 @@ class Printer {
   }
 }
 
+//// 将打印方法挂到Printer原型链上
 // Expose the node type functions and helpers on the prototype for easy usage.
 Object.assign(Printer.prototype, generatorFunctions);
 

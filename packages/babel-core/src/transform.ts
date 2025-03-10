@@ -29,6 +29,7 @@ const transformRunner = gensync(function* transform(
   return yield* run(config, code);
 });
 
+//// 主要的transform函数
 export const transform: Transform = function transform(
   code,
   optsOrCallback?: InputOptions | null | undefined | FileResultCallback,

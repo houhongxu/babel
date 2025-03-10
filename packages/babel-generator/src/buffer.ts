@@ -31,6 +31,7 @@ type QueueItem = {
   filename: string | undefined;
 };
 
+//// 自定义的buffer
 export default class Buffer {
   constructor(map: SourceMap | null, indentChar: string) {
     this._map = map;
@@ -110,6 +111,7 @@ export default class Buffer {
     return this._queue[--this._queueCursor];
   }
 
+  //// 获取打印结果
   /**
    * Get the final string output from the buffer, along with the sourcemap if one exists.
    */
@@ -405,6 +407,7 @@ export default class Buffer {
     return this._queueCursor !== 0 || !!this._last;
   }
 
+  //// 更精确地生成sourcemap
   /**
    * Certain sourcemap usecases expect mappings to be more accurate than
    * Babel's generic sourcemap handling allows. For now, we special-case
